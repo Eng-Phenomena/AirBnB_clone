@@ -1,40 +1,52 @@
 #!/usr/bin/python3
-""" Base model"""
+"""BaseModel that defines all common attributes/methods for other classes"""
+
+from uuid import uuid4
 from datetime import datetime
-import uuid
 import models
 
+
 class BaseModel:
-    """ Base mOdel class"""
+    """base model class"""
+
     def __init__(self, *args, **kwargs):
-        """ constructor of base model"""
+        """Constructor of BaseModel
+        ....................................
+            args:
+            ...
+            self -> instance
+            args -> variable number of variable in tuple
+            kwargs -> key word argument to get dict
+        """
 
-        if len(kwargs) != 0:
-            self.__dict__ = kwargs
-            self.created_at = datetime.strptime(self.created_at, "%Y-%m-%dT%H:%M:%S.%f")
-            self.updated_at = datetime.strptime(self.updated_at, "%Y-%m-%dT%H:%M:%S.%f")
-
-        else:
-            self.id = str(uuid.uuid4())
+        if kwargs == {}:
+            self.id = str(uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
             models.storage.new(self)
 
+        else:
+            self.__dict__ = kwargs
+            self.created_at = datetime.strptime(self.created_at, "%Y-%m-%dT%H:%M:%S.%f")
+            self.updated_at = datetime.strptime(self.updated_at, "%Y-%m-%dT%H:%M:%S.%f")
+
     def __str__(self):
-        """ to string method"""
+        """To string method of instance"""
+
         return "[{}] ({}) {}".format(self.__class__.__name__, self.id, self.__dict__)
 
     def save(self):
-        """ upadting time of the instance"""
-        self.update_at = datetime.now()
+        """Updating the time of object"""
+
+        self.updated_at = datetime.now()
         models.storage.save()
 
     def to_dict(self):
-        """ returnig key/value of the instance"""
-        Updated_dict = self.__dict__.copy()
+        """returns a dictionary containing all keys/values of __dict__"""
 
-        Updated_dict["__class__"] = self.__class__.__name__
-        Updated_dict["updated_at"] = self.updated_at.isoformat()
-        Updated_dict["created_at"] = self.created_at.isoformat()
+        Updated_Dict = self.__dict__.copy()
+        Updated_Dict["__class__"] = self.__class__.__name__
+        Updated_Dict["updated_at"] = self.updated_at.isoformat()
+        Updated_Dict["created_at"] = self.created_at.isoformat()
 
-        return (Updated_dict)
+        return Updated_Dict

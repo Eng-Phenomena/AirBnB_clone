@@ -1,30 +1,50 @@
 #!/usr/bin/python3
-"""filestrorage module"""
+"""FileStorage that serializes instances to a JSON file
+    and deserializes JSON file to instances
+
+    <class 'BaseModel'> -> to_dict() -> <class 'dict'> ->
+    JSON dump -> <class 'str'> -> FILE -> <class 'str'> ->
+    JSON load -> <class 'dict'> -> <class 'BaseModel'>
+
+"""
+
+from models.base_model import BaseModel
 import json
 from models.base_model import BaseModel
-import os
+from models.user import User
+from models.amenity import Amenity
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
+
 
 class FileStorage:
-    """filestorage"""
+    """File storage class"""
 
     __file_path = "file.json"
     __objects = {}
 
     def all(self):
-        """returns the dictionary __objects"""
+        """returns the stored dict"""
 
         return self.__objects
 
     def new(self, obj):
-        """sets in __objects the obj with key"""
+        """sets in __objects the obj with key <obj class name>.id
+            args:
+
+            self -> instance variable
+            obj -> obj to be stored
+        """
 
         self.__objects["{}.{}".format(obj.__class__.__name__, obj.id)] = obj
 
     def save(self):
-        """serializes __objects to the JSON file"""
+        """serializes __objects to the JSON file(path: __filepath)"""
 
         tmp = {}
-        with open(self.__file_path, mode='w+', encoding="utf-8") as wjsonf:
+        with open(self.__file_path, mode='w', encoding="utf-8") as wjsonf:
             for i, j in self.__objects.items():
                 tmp[i] = j.to_dict()
             json.dump(tmp, wjsonf)
@@ -32,22 +52,12 @@ class FileStorage:
     def reload(self):
         """deserializes the JSON file to __objects"""
 
-        current_classes = {'BaseModel': BaseModel}
-
-        if not os.path.exists(FileStorage.__file_path):
-            return
-
-        with open(FileStorage.__file_path, 'r') as f:
-            deserialized = None
-
-            try:
-                deserialized = json.load(f)
-            except json.JSONDecodeError:
-                pass
-
-            if deserialized is None:
-                return
-
-            FileStorage.__objects = {
-                k: current_classes[k.split('.')[0]](**v)
-                for k, v in deserialized.items()}
+        try:
+            with open(FileStorage.__file_path) as f:
+                tmp_dict = json.load(f)
+                for value in tmp_dict.values():
+                    class_name = value["__class__"]
+                    del value["__class__"]
+                    self.new(eval(class_name)(**value))
+        except FileNotFoundError:
+            pass
