@@ -63,7 +63,7 @@ class HBNBCommand(cmd.Cmd):
         elif args[0] not in HBNBCommand.__classes_HBNB:
             print("** class doesn't exist **")
         else:
-            if not args[1]:
+            if len(args) < 2:
                 print("** instance id missing **")
             else:
                 key = "{}.{}".format(args[0], args[1])
@@ -85,7 +85,7 @@ class HBNBCommand(cmd.Cmd):
         elif args[0] not in HBNBCommand.__classes_HBNB:
             print("** class doesn't exist **")
         else:
-            if not args[1]:
+            if len(args) < 2:
                 print("** instance id missing **")
             else:
                 key = "{}.{}".format(args[0], args[1])
